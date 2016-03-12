@@ -24,7 +24,7 @@ def download_to_disk(sourceURL, targetDirectory, targetFileName=None):
 def download_from_file_to_disk(fileName, targetDirectory):
 	with open(fileName) as f:
 		for line in f:
-			download_to_disk(line, targetDirectory)
+			download_to_disk(line.rstrip(), targetDirectory)
 
 
 
