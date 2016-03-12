@@ -13,8 +13,13 @@ def get_file_name(fileURL):
 def download_to_disk(sourceURL, targetDirectory, targetFileName=None):
 	if targetFileName == None:
 		targetFileName = get_file_name(sourceURL)
-	targetFile = urllib.URLopener()
-	targetFile.retrieve(sourceURL, targetDirectory + targetFileName)
+	try:
+		targetFile = urllib.URLopener()
+		targetFile.retrieve(sourceURL, targetDirectory + targetFileName)
+		print(sourceURL + " -> " + targetFileName + ": ok")
+	except IOError as err:
+		print(sourceURL + " -> " + targetFileName + ": " + err.strerror)
+
 
 def download_from_file_to_disk(fileName, targetDirectory):
 	with open(fileName) as f:
