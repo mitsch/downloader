@@ -19,6 +19,24 @@ def get_file_name_from_url(fileURL):
 	else:
 		return "index.html"
 
+def alternate_existing_file_path(filePath):
+	if os.access(filePath, os.F_OK):
+		suffixSplitting = string.rsplit(filePath, '.', 1)
+		suffix = suffixSplitting if len(suffixSplitting) == 2 else ""
+		counterSplitting = string.rsplit(suffixSplitting[0], ' ', 1)
+		count = 1
+		if len(counterSplitting) == 2:
+			counterMatch = re.match('^\((\d+)\)$', counterSplitting[1])
+			if counterMatch:
+				count = int(counterMatch.group(1)) + 1
+		alternatedFilePath = counterSplitting[0] + " (" + count + ")" + suffix
+		while os.access(alternatedFilePath, os.F_OK):
+			alternatedFilePath = counterSplitting[0] + " (" + count + ")" + suffix
+			++count
+		return alternatedFilePath
+	else:
+		return filePath
+
 def download_to_disk(sourceURL, targetDirectory, targetFileName=None):
 	targetName = get_file_name_from_url(sourceURL)
 	targetPath = os.path.join(targetDirectory, targetName)
