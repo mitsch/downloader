@@ -5,8 +5,9 @@ import posixpath
 import urlparse
 import getopt
 import urllib
-#import urllib.error
 import os
+import string
+import re
 
 def get_file_name_from_url(fileURL):
 	urlSplitting = urlparse.urlsplit(fileURL)
@@ -37,20 +38,23 @@ def alternate_existing_file_path(filePath):
 	else:
 		return filePath
 
-def download_to_disk(sourceURL, targetDirectory, targetFileName=None):
-	targetName = get_file_name_from_url(sourceURL)
-	targetPath = os.path.join(targetDirectory, targetName)
+def download_to_disk(source, target):
 	try:
-		urllib.urlretrieve(sourceURL, targetPath)
-		print(sourceURL + " -> " + targetPath)
+		urllib.urlretrieve(source, target)
+		print(source + " -> " + target)
 	except EnvironmentError as err:
-		print("error: " + sourceURL + " -> " + targetPath + ": " + err.strerror)
+		print("error: " + source + " -> " + target + ": " + err.strerror)
 
 
-def download_from_file_to_disk(fileName, targetDirectory):
+def download_from_file_to_disk(fileName, targetDirectory, alternate=None):
 	with open(fileName) as f:
 		for line in f:
-			download_to_disk(line.rstrip(), targetDirectory)
+			sourceURL = line.rstrip()
+			targetName = get_file_name_from_url(sourceURL)
+			targetPath = os.path.join(targetDirectory, targetName)
+			if alternate:
+				targetPath = alternate_existing_file_path(targetPath)
+			download_to_disk(sourceURL, targetPath)
 	# TODO catch exception for not existing fileName or not existing targetDirectory
 
 
