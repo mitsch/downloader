@@ -66,10 +66,11 @@ def usage():
 	print("\t                          (default is current directory)")
 	print("\t-r, --rewrite             already existing files will be replaced")
 	print("\t                          (default is creating alternative filename)")
+	print("\t-h, --help                prints this information text")
 
 def main():
 	try:
-		opts, args = getopt.getopt(sys.argv[1:], 'd:r', ["directory=", "rewrite"])
+		opts, args = getopt.getopt(sys.argv[1:], 'd:rh', ["directory=", "rewrite", "help"])
 	except getopt.GetoptError as err:
 		print str(err)
 		usage()
@@ -90,6 +91,9 @@ def main():
 				targetDirectory = val
 		elif opt in ("-r", "--rewrite"):
 			doRewriteFiles = True
+		elif opt in ("-h", "--help"):
+			usage()
+			sys.exit(0)
 
 	# default setting for targetDirectory (empty string instead of None)
 	if not targetDirectory:
@@ -105,7 +109,6 @@ def main():
 
 	# let the downloading begin
 	download_from_file_to_disk(fileName, targetDirectory, not doRewriteFiles)
-
 
 
 if __name__ == "__main__":
