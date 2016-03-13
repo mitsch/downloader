@@ -9,6 +9,8 @@ import os
 import string
 import re
 
+# The basename will be deduced from the url. If no basename exists in the url, index.html
+# will be returned with a the hostname prepended (if so exists in the url)
 def get_file_name_from_url(fileURL):
 	urlSplitting = urlparse.urlsplit(fileURL)
 	basename = posixpath.basename(urlSplitting.path)
@@ -20,6 +22,10 @@ def get_file_name_from_url(fileURL):
 	else:
 		return "index.html"
 
+# An altenation of the file path will be returned, if it already exists. If file path does not
+# exist, it will be returned without any alternation. The alternation inserts an additional pattern
+# right before the suffix (or at the end, if no suffix exists). A file path with this additio won't
+# exist so far.
 def alternate_existing_file_path(filePath):
 	if os.access(filePath, os.F_OK):
 		suffixSplitting = string.rsplit(filePath, '.', 1)
@@ -32,12 +38,13 @@ def alternate_existing_file_path(filePath):
 				count = int(counterMatch.group(1)) + 1
 		alternatedFilePath = counterSplitting[0] + "(" + str(count) + ")" + suffix
 		while os.access(alternatedFilePath, os.F_OK):
+			count = count + 1
 			alternatedFilePath = counterSplitting[0] + "(" + str(count) + ")" + suffix
-			++count
 		return alternatedFilePath
 	else:
 		return filePath
 
+# Some resource (given with an url source) will be downloaded and stored in path target.
 def download_to_disk(source, target):
 	try:
 		urllib.urlretrieve(source, target)
@@ -46,6 +53,11 @@ def download_to_disk(source, target):
 		print("error: " + source + " -> " + target + ": " + err.strerror)
 
 
+# A file at fileName will be read, expecting one url per line. Each url will be downloaded
+# to some name in targetDirectory. The name will be deduced with get_file_name_from_url and
+# depending on alternate (None->yes, True->no), it will be changed to an non-existing file
+# name. No checks will be performed on the existence and readability of fileName or the
+# existence and writability of targetDirectory.
 def download_from_file_to_disk(fileName, targetDirectory, alternate=None):
 	with open(fileName) as f:
 		for line in f:
@@ -55,7 +67,6 @@ def download_from_file_to_disk(fileName, targetDirectory, alternate=None):
 			if alternate:
 				targetPath = alternate_existing_file_path(targetPath)
 			download_to_disk(sourceURL, targetPath)
-	# TODO catch exception for not existing fileName or not existing targetDirectory
 
 
 def usage():
@@ -88,7 +99,11 @@ def main():
 				usage()
 				sys.exit(2)
 			else:
-				targetDirectory = val
+				if os.access(val, os.W_OK):
+					targetDirectory = val
+				else:
+					print("Cannot download in directory \"" + val + "\"!")
+					sys.exit(2)
 		elif opt in ("-r", "--rewrite"):
 			doRewriteFiles = True
 		elif opt in ("-h", "--help"):
@@ -97,11 +112,19 @@ def main():
 
 	# default setting for targetDirectory (empty string instead of None)
 	if not targetDirectory:
-		targetDirectory = ""
+		if os.access("./", os.W_OK):
+			targetDirectory = ""
+		else:
+			print("Cannot download in current directory!")
+			sys.exit(2)
 
 	# So far we only accept one file of urls
 	if len(args) == 1:
-		fileName = args[0]
+		if os.access(args[0], os.R_OK):
+			fileName = args[0]
+		else:
+			print("Cannot read file \"" + args[0] + "\"!")
+			sys.exit(2)
 	else:
 		print("Please give exactly one file of URLs!")
 		usage()
