@@ -64,19 +64,47 @@ def usage():
 	print("\nOPTIONS:")
 	print("\t-d, --directory=DIRECTORY directory where files will be stored")
 	print("\t                          (default is current directory)")
+	print("\t-r, --rewrite             already existing files will be replaced")
+	print("\t                          (default is creating alternative filename)")
 
 def main():
 	try:
-		opts, args = getopt.getopt(sys.argv[1:], 'd:', ["directory="])
+		opts, args = getopt.getopt(sys.argv[1:], 'd:r', ["directory=", "rewrite"])
 	except getopt.GetoptError as err:
 		print str(err)
 		usage()
 		sys.exit(2)
-	#TODO check on opts and args
 
-	fileName = args[0]
-	targetDirectory = opts[0].value if len(opts) > 0 else ""
-	download_from_file_to_disk(fileName, targetDirectory, True)
+	# all values to store information from command line
+	fileName = None
+	targetDirectory = None
+	doRewriteFiles = None
+
+	for opt, val in opts:
+		if opt in ("-d", "--directory"):
+			if targetDirectory:
+				print("Too many target directories!")
+				usage()
+				sys.exit(2)
+			else:
+				targetDirectory = val
+		elif opt in ("-r", "--rewrite"):
+			doRewriteFiles = True
+
+	# default setting for targetDirectory (empty string instead of None)
+	if not targetDirectory:
+		targetDirectory = ""
+
+	# So far we only accept one file of urls
+	if len(args) == 1:
+		fileName = args[0]
+	else:
+		print("Please give exactly one file of URLs!")
+		usage()
+		sys.exit(2)
+
+	# let the downloading begin
+	download_from_file_to_disk(fileName, targetDirectory, not doRewriteFiles)
 
 
 
