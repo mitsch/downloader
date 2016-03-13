@@ -23,16 +23,16 @@ def get_file_name_from_url(fileURL):
 def alternate_existing_file_path(filePath):
 	if os.access(filePath, os.F_OK):
 		suffixSplitting = string.rsplit(filePath, '.', 1)
-		suffix = suffixSplitting if len(suffixSplitting) == 2 else ""
-		counterSplitting = string.rsplit(suffixSplitting[0], ' ', 1)
+		suffix = ("." + suffixSplitting[1]) if len(suffixSplitting) == 2 else ""
+		counterSplitting = string.rsplit(suffixSplitting[0], '(', 1)
 		count = 1
 		if len(counterSplitting) == 2:
-			counterMatch = re.match('^\((\d+)\)$', counterSplitting[1])
+			counterMatch = re.match('^(\d+)\)$', counterSplitting[1])
 			if counterMatch:
 				count = int(counterMatch.group(1)) + 1
-		alternatedFilePath = counterSplitting[0] + " (" + count + ")" + suffix
+		alternatedFilePath = counterSplitting[0] + "(" + str(count) + ")" + suffix
 		while os.access(alternatedFilePath, os.F_OK):
-			alternatedFilePath = counterSplitting[0] + " (" + count + ")" + suffix
+			alternatedFilePath = counterSplitting[0] + "(" + str(count) + ")" + suffix
 			++count
 		return alternatedFilePath
 	else:
@@ -76,7 +76,7 @@ def main():
 
 	fileName = args[0]
 	targetDirectory = opts[0].value if len(opts) > 0 else ""
-	download_from_file_to_disk(fileName, targetDirectory)
+	download_from_file_to_disk(fileName, targetDirectory, True)
 
 
 
